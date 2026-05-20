@@ -1,211 +1,198 @@
-Multi-Container Pod Design Lab 🚀
+# Multi-Container Pod Design Lab 🚀
 
-A hands-on Kubernetes lab focused on understanding and implementing Multi-Container Pods, including:
+A hands-on Kubernetes lab focused on understanding and implementing Multi-Container Pods using:
 
-Sidecar Containers
-Init Containers
-Shared Volumes
-Container Communication
-Logging Architecture
-Monitoring & Troubleshooting
+- Init Containers
+- Sidecar Containers
+- Shared Volumes
+- Container Communication
+- Logging Architecture
+- Monitoring & Troubleshooting
 
-This lab is ideal for beginners preparing for:
+This project is ideal for:
 
-Kubernetes Administration
-DevOps Engineering
-Cloud-Native Development
-CKAD Certification
-Real-world Kubernetes Deployments
-📚 Lab Objectives
+- Kubernetes Beginners
+- DevOps Engineers
+- CKAD Preparation
+- Cloud-Native Developers
 
-By completing this lab, you will learn how to:
+---
 
-Create and manage multi-container pods
-Use sidecar containers for logging and monitoring
-Configure init containers for startup initialization
-Share data between containers using volumes
-Troubleshoot multi-container pod issues
-Monitor logs and container interactions
-Apply Kubernetes design patterns in practical scenarios
-🛠 Prerequisites
+# 📚 Table of Contents
 
-Before starting this lab, you should have:
+- [Overview](#-overview)
+- [Objectives](#-objectives)
+- [Prerequisites](#-prerequisites)
+- [Project Structure](#-project-structure)
+- [Environment Setup](#️-environment-setup)
+- [Task 1 - Multi-Container Pod](#-task-1---multi-container-pod)
+- [Task 2 - Advanced Multi-Container Pod](#-task-2---advanced-multi-container-pod)
+- [Troubleshooting](#-troubleshooting)
+- [Best Practices](#-best-practices)
+- [Key Concepts](#-key-concepts)
+- [CKAD Relevance](#-ckad-relevance)
+- [Cleanup](#-cleanup)
+- [Contributing](#-contributing)
+- [Author](#-author)
 
-Basic Kubernetes knowledge
-Familiarity with Pods and Containers
-Understanding of YAML syntax
-Basic Linux command-line experience
-kubectl installed and configured
-Minikube or Kubernetes cluster running
-🧱 Project Structure
+---
+
+# 📖 Overview
+
+This lab demonstrates how multiple containers can work together inside a single Kubernetes Pod.
+
+You will learn:
+
+- Init container workflow
+- Sidecar container pattern
+- Shared storage communication
+- Multi-container debugging
+- Logging and monitoring patterns
+
+---
+
+# 🎯 Objectives
+
+By completing this lab, you will be able to:
+
+- Create multi-container pods
+- Configure init containers
+- Implement sidecar logging
+- Share data between containers
+- Troubleshoot pod issues
+- Monitor container interactions
+- Apply Kubernetes design patterns
+
+---
+
+# 🛠 Prerequisites
+
+Before starting this lab, ensure you have:
+
+- Basic Kubernetes knowledge
+- Understanding of Pods & Containers
+- YAML fundamentals
+- Linux command-line basics
+- kubectl configured
+- Minikube or Kubernetes cluster
+
+---
+
+# 🧱 Project Structure
+
+```bash
 lab2-multicontainer/
 │
 ├── multi-container-pod.yaml
 ├── advanced-multi-container.yaml
 └── README.md
 ⚙️ Environment Setup
-
-Create the project directory:
-
+Create Working Directory
 mkdir ~/lab2-multicontainer
 cd ~/lab2-multicontainer
-
-Verify Kubernetes cluster:
-
+Verify Cluster
 kubectl get nodes
-🚀 Task 1: Multi-Container Pod with Sidecar Logging
+🚀 Task 1 - Multi-Container Pod
 Architecture
+Container	Purpose
+web-app	Runs Nginx application
+log-sidecar	Monitors nginx logs
+config-setup	Initializes configuration
+Create Pod Manifest
 
-This pod contains:
-
-Container Type	Purpose
-Main Container	Runs Nginx web application
-Sidecar Container	Reads and monitors logs
-Init Container	Creates configuration files before app starts
-📄 Create Pod Manifest
-
-Create file:
+Create YAML file:
 
 nano multi-container-pod.yaml
 
-Apply the manifest:
+Apply configuration:
 
 kubectl apply -f multi-container-pod.yaml
 
 Verify pod:
 
 kubectl get pods
-🔍 Verify Init Container
+Verify Init Container
 
-Check init container logs:
+Check logs:
 
 kubectl logs multi-container-app -c config-setup
 
-Expected output:
-
-Initializing configuration...
-Configuration setup complete!
-
-Verify generated configuration:
+Verify configuration file:
 
 kubectl exec multi-container-app -c web-app -- cat /etc/app-config/app.conf
-🌐 Generate Web Traffic
+Generate Traffic
 
 Get pod IP:
 
 kubectl get pod multi-container-app -o wide
 
-Create temporary test client:
+Run test client:
 
 kubectl run test-client --image=busybox:1.35 --rm -it --restart=Never -- /bin/sh
 
-Inside test client:
+Inside test pod:
 
 wget -q -O- http://POD_IP
 wget -q -O- http://POD_IP/nonexistent
-wget -q -O- http://POD_IP
-exit
-📜 Monitor Sidecar Logs
-
-Check sidecar logs:
-
+Monitor Sidecar Logs
 kubectl logs multi-container-app -c log-sidecar --tail=20
-
-The sidecar container continuously monitors the nginx access logs using a shared volume.
-
-📦 Shared Volume Verification
-
-From main container:
-
-kubectl exec multi-container-app -c web-app -- ls -la /var/log/nginx/
-
-From sidecar container:
-
-kubectl exec multi-container-app -c log-sidecar -- ls -la /var/log/nginx/
-🚀 Task 2: Advanced Multi-Container Pod
-
-Create advanced manifest:
-
+🚀 Task 2 - Advanced Multi-Container Pod
+Create Advanced Pod
 nano advanced-multi-container.yaml
 
-Deploy advanced pod:
+Deploy:
 
 kubectl apply -f advanced-multi-container.yaml
-🧠 Advanced Architecture
-
-This deployment contains:
-
+Advanced Architecture
 Container	Role
 data-initializer	Initializes shared data
 main-app	Processes data
-monitor-sidecar	Monitors shared files
-cleanup-sidecar	Performs cleanup operations
-📊 Monitor Containers
-
-Check pod details:
-
-kubectl describe pod advanced-multi-container
-
-View logs:
-
-Main App
+monitor-sidecar	Monitors files
+cleanup-sidecar	Cleans temporary files
+Monitor Containers
+Main App Logs
 kubectl logs advanced-multi-container -c main-app
-Monitor Sidecar
+Monitor Sidecar Logs
 kubectl logs advanced-multi-container -c monitor-sidecar
-Cleanup Sidecar
+Cleanup Sidecar Logs
 kubectl logs advanced-multi-container -c cleanup-sidecar
-🛠 Troubleshooting Commands
+🛠 Troubleshooting
 Describe Pod
 kubectl describe pod multi-container-app
 View Events
 kubectl get events --field-selector involvedObject.name=multi-container-app
-Check Resource Usage
+Resource Usage
 kubectl top pod multi-container-app --containers
-Access Specific Container Shell
+Access Container Shell
 kubectl exec -it multi-container-app -c web-app -- /bin/sh
-🔄 Verify Container Communication
+📦 Shared Volume Verification
 
-Write file from main container:
+Write file from web container:
 
-kubectl exec multi-container-app -c web-app -- sh -c 'echo "Hello from web-app" > /var/log/nginx/test-message.txt'
+kubectl exec multi-container-app -c web-app -- sh -c 'echo "Hello" > /var/log/nginx/test.txt'
 
-Read from sidecar container:
+Read from sidecar:
 
-kubectl exec multi-container-app -c log-sidecar -- cat /var/log/nginx/test-message.txt
-🧹 Cleanup Resources
-
-Delete pods:
-
-kubectl delete pod multi-container-app
-kubectl delete pod advanced-multi-container
-
-Verify cleanup:
-
-kubectl get pods
-📌 Key Kubernetes Concepts Learned
+kubectl exec multi-container-app -c log-sidecar -- cat /var/log/nginx/test.txt
+📌 Key Concepts
 🔹 Init Containers
 
-Init containers run before the main application containers start.
-
-Use cases:
+Used for:
 
 Configuration setup
-Database initialization
 Dependency checks
-Secret preparation
+Secret initialization
 🔹 Sidecar Containers
 
-Sidecars provide helper functionality to the main application.
+Used for:
 
-Common examples:
-
-Log shipping
+Logging
 Monitoring
+Proxying
 Metrics collection
-Proxy services
 🔹 Shared Volumes
 
-Containers inside the same pod can share storage using volumes.
+Enable containers inside the same pod to share data.
 
 Example:
 
@@ -213,78 +200,51 @@ volumes:
 - name: shared-data
   emptyDir: {}
 📖 Best Practices
-
-✅ Keep containers focused on a single responsibility
-✅ Use init containers for setup tasks
-✅ Use sidecars for monitoring and logging
-✅ Share data through volumes instead of network calls
-✅ Monitor resource usage regularly
-✅ Use meaningful container names
-✅ Keep YAML manifests version controlled
-
-🧪 Useful Commands Cheat Sheet
-# View all container logs
-kubectl logs pod-name --all-containers=true
-
-# Follow logs
-kubectl logs -f pod-name -c container-name
-
-# Execute shell
-kubectl exec -it pod-name -c container-name -- /bin/sh
-
-# Check mounts
-kubectl describe pod pod-name | grep -A 5 "Mounts:"
-🎯 Learning Outcome
-
-After completing this lab, you will understand:
-
-Multi-container pod architecture
-Sidecar design pattern
-Init container workflow
-Shared volume communication
-Kubernetes troubleshooting techniques
-Real-world container collaboration patterns
-📚 Real-World Use Cases
-
-Multi-container pods are widely used in:
-
-Microservices platforms
-DevSecOps pipelines
-Logging architectures
-Service mesh deployments
-Monitoring systems
-Security scanning containers
+Use one responsibility per container
+Use init containers for setup tasks
+Use sidecars for auxiliary services
+Monitor resource usage
+Use meaningful naming conventions
+Store YAML manifests in version control
 🏆 CKAD Relevance
 
-This lab directly supports concepts required for the:
-
-Certified Kubernetes Application Developer (CKAD)
-
-Important CKAD topics covered:
+This lab covers important CKAD topics:
 
 Multi-container Pods
 Init Containers
 Shared Volumes
 Logging
 Troubleshooting
+🧹 Cleanup
+
+Delete resources:
+
+kubectl delete pod multi-container-app
+kubectl delete pod advanced-multi-container
+
+Verify cleanup:
+
+kubectl get pods
 🤝 Contributing
 
-Feel free to fork this repository and improve the lab by:
+Contributions are welcome.
 
-Adding Helm charts
-Adding Kubernetes Deployments
-Adding ConfigMaps & Secrets
-Adding Persistent Volumes
-Integrating monitoring tools
+You can improve this project by adding:
+
+Helm charts
+Deployments
+ConfigMaps
+Persistent Volumes
+Monitoring integrations
+👨‍💻 Author
+Zohaib Ahmed
+
+DevOps Engineer | Kubernetes | Cloud | AI/ML Enthusiast
+
 ⭐ Support
 
-If this repository helped you learn Kubernetes, consider giving it a ⭐ on GitHub.
-
-👨‍💻 Author
-
-Zohaib Ahmed
-DevOps | Cloud | Kubernetes | AI/ML Enthusiast
+If you found this repository useful, give it a star ⭐
 
 📜 License
 
-This project is open-source and available under the MIT License.
+This project is licensed under the MIT License.
